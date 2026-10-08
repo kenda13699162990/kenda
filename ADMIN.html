@@ -352,15 +352,6 @@
 
   <!-- Main Content -->
   <div class="container">
-    <!-- File Upload Section -->
-    <div class="panel">
-      <h2>📁 เลือกไฟล์ Excel</h2>
-      <div class="toolbar">
-        <input id="excelFile" type="file" accept=".xlsx,.xls,.csv" />
-      </div>
-      <div id="fileStatus" class="status"></div>
-    </div>
-
     <!-- Command Panel -->
     <div class="panel">
       <h2>⚙️ ปุ่มคำสั่ง</h2>
@@ -369,7 +360,7 @@
         <button id="btnClear" class="danger-btn">🗑️ Clear File</button>
         <button id="btnAddAdmin" class="primary-btn">👥 Add Admins</button>
       </div>
-      <div id="status" class="status">ยังไม่มีไฟล์ Excel ที่ถูกโหลด</div>
+      <div id="status" class="status">พร้อมใช้งาน</div>
     </div>
   </div>
 
@@ -449,7 +440,7 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.org/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const SHEET_NAMES = ["IMEI_Status", "Customer", "All_Record", "Employee", "Admin"];
     const app = {
@@ -460,11 +451,9 @@
     };
 
     const statusEl = document.getElementById("status");
-    const fileStatusEl = document.getElementById("fileStatus");
     const exportModal = document.getElementById("exportModal");
     const clearModal = document.getElementById("clearModal");
     const adminModal = document.getElementById("adminModal");
-    const excelFileInput = document.getElementById("excelFile");
 
     function displayCurrentUser() {
       const user = sessionStorage.getItem("currentUser") || "Admin";
@@ -474,11 +463,6 @@
     function setStatus(message, type = "") {
       statusEl.textContent = message;
       statusEl.className = "status" + (type ? ` ${type}` : "");
-    }
-
-    function setFileStatus(message, type = "") {
-      fileStatusEl.innerHTML = message;
-      fileStatusEl.className = "file-status" + (type ? ` ${type}` : "");
     }
 
     function createDefaultWorkbook() {
@@ -610,35 +594,7 @@
       });
     }
 
-    function loadExcelFile(file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        try {
-          app.workbook = XLSX.read(data, { type: "array" });
-          app.selectedFileName = file.name || "workbook.xlsx";
-          ensureWorkbookHasSheets();
-          setFileStatus(`✓ ${file.name}`, "");
-          setStatus(`โหลดไฟล์สำเร็จ: ${file.name}`, "success");
-        } catch (error) {
-          setFileStatus(`✗ ไฟล์ไม่ถูกต้อง`, "error");
-          setStatus("ไฟล์ Excel ไม่ถูกต้องหรือเสียหาย", "error");
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    excelFileInput.addEventListener("change", function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      loadExcelFile(file);
-    });
-
     document.getElementById("btnExport").addEventListener("click", function () {
-      if (!app.workbook) {
-        setStatus("กรุณาเลือกไฟล์ Excel ก่อน", "error");
-        return;
-      }
       ensureWorkbookHasSheets();
       populateSheetCheckboxes("exportSheetList", SHEET_NAMES);
       openModal(exportModal);
@@ -677,10 +633,6 @@
     });
 
     document.getElementById("btnClear").addEventListener("click", function () {
-      if (!app.workbook) {
-        setStatus("กรุณาเลือกไฟล์ Excel ก่อน", "error");
-        return;
-      }
       ensureWorkbookHasSheets();
       populateSheetCheckboxes("clearSheetList", SHEET_NAMES);
       openModal(clearModal);
@@ -717,13 +669,6 @@
       });
 
       setStatus(`เคลียร์ข้อมูลสำเร็จในชีต: ${checked.join(", ")} (เก็บหัวตารางไว้)`, "success");
-      if (app.selectedFileName) {
-        try {
-          XLSX.writeFile(app.workbook, app.selectedFileName);
-        } catch (error) {
-          console.error("Auto-save error:", error);
-        }
-      }
       closeModal(clearModal);
     });
 
@@ -795,7 +740,6 @@
       loadAdminsFromStorage();
       app.workbook = createDefaultWorkbook();
       app.selectedFileName = "workbook.xlsx";
-      setStatus("พร้อมใช้งาน - โปรดเลือกไฟล์ Excel", "");
     });
   </script>
 </body>
