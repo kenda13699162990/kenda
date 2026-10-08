@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ผู้ดูแลระบบ - Excel Management</title>
+  <style>
+    :root {
+      --primary: #2f6fed;
+      --primary-dark: #1f4eb8;
+      --danger: #d9534f;
+      --success: #2e8b57;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --border: #dfe7f4;
+      --text: #1f2d3d;
+      --muted: #62748b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(31, 45, 61, 0.15);
+    }
+
+    .header-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 24px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(31, 45, 61, 0.06);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 1.8rem;
+      color: var(--text);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      min-height: 42px;
+    }
+
+    .primary-btn {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .primary-btn:hover { background: var(--primary-dark); }
+
+    .danger-btn {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .danger-btn:hover { background: #c9302c; }
+
+    .ghost-btn {
+      background: #ecf2ff;
+      color: var(--primary-dark);
+    }
+
+    .ghost-btn:hover {
+      background: #d9e7ff;
+    }
+
+    .status {
+      margin-top: 12px;
+      min-height: 24px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status.success { color: var(--success); }
+    .status.error { color: var(--danger); }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-box {
+      width: min(500px, 100%);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 16px 50px rgba(15, 23, 42, 0.2);
+      padding: 20px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: var(--text);
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      min-height: auto;
+      padding: 6px 10px;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.1);
+    }
+
+    .admin-list-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #fafcff;
+      margin-top: 8px;
+    }
+
+    .admin-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .admin-item:last-child { margin-bottom: 0; }
+
+    .admin-item.selected {
+      border-color: var(--primary);
+      background: rgba(47, 111, 237, 0.05);
+    }
+
+    .admin-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .admin-name {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .admin-password {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .admin-role {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .admin-role.admin {
+      background: rgba(217, 83, 79, 0.2);
+      color: var(--danger);
+    }
+
+    .admin-role.user {
+      background: rgba(46, 139, 87, 0.2);
+      color: var(--success);
+    }
+
+    .small-btn {
+      padding: 8px 12px;
+      min-height: 36px;
+      font-size: 13px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .section-divider {
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+      padding-top: 24px;
+    }
+
+    .sheet-list {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f9fbff;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 10px;
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .modal-actions { justify-content: stretch; }
+      .modal-actions button { flex: 1; }
+      .header-content { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1 class="header-title">🔐 ผู้ดูแลระบบ</h1>
+      <div class="header-user">
+        <span>👤 <strong id="currentUserDisplay">Admin</strong></span>
+        <button class="logout-btn" onclick="handleLogout()">ออกจากระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- File Upload Section -->
+    <div class="panel">
+      <h2>📁 เลือกไฟล์ Excel</h2>
+      <div class="toolbar">
+        <input id="excelFile" type="file" accept=".xlsx,.xls,.csv" />
+      </div>
+      <div id="fileStatus" class="status"></div>
+    </div>
+
+    <!-- Command Panel -->
+    <div class="panel">
+      <h2>⚙️ ปุ่มคำสั่ง</h2>
+      <div class="toolbar">
+        <button id="btnExport" class="primary-btn">📤 Export File</button>
+        <button id="btnClear" class="danger-btn">🗑️ Clear File</button>
+        <button id="btnAddAdmin" class="primary-btn">👥 Add Admins</button>
+      </div>
+      <div id="status" class="status">ยังไม่มีไฟล์ Excel ที่ถูกโหลด</div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal" aria-modal="true" role="dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>📤 Export File</h3>
+        <button class="close-btn" data-close="exportModal">×</button>
+      </div>
+      <p>เลือกชีตที่ต้องการ Export (พร้อมข้อมูลทั้งหมดและหัวตาราง):</p>
+      <div id="exportSheetList" class="sheet-list"></div>
+      <div class="modal-actions">
+        <button id="confirmExport" class="primary-btn">Export</button>
+        <button class="ghost-btn" data-close="exportModal">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Modal -->
+  <div id="clearModal" class="modal" aria-modal="true" role="dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🗑️ Clear File</h3>
+        <button class="close-btn" data-close="clearModal">×</button>
+      </div>
+      <p>เลือกชีตที่ต้องการเคลียร์ข้อมูล แต่ไม่ลบหัวชีต</p>
+      <div id="clearSheetList" class="sheet-list"></div>
+      <div class="modal-actions">
+        <button id="confirmClear" class="danger-btn">Clear</button>
+        <button class="ghost-btn" data-close="clearModal">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Admin Modal -->
+  <div id="adminModal" class="modal" aria-modal="true" role="dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>👥 เพิ่มผู้ดูแลระบบ</h3>
+        <button class="close-btn" data-close="adminModal">×</button>
+      </div>
+
+      <div class="form-group">
+        <div class="field">
+          <label for="adminUsername">Username</label>
+          <input id="adminUsername" type="text" placeholder="กรอก Username" />
+        </div>
+
+        <div class="field">
+          <label for="adminPassword">Password</label>
+          <input id="adminPassword" type="password" placeholder="กรอก Password" />
+        </div>
+
+        <div class="field">
+          <label for="adminRole">สถานะผู้ใช้</label>
+          <select id="adminRole">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="btnAddAdminRow" class="primary-btn small-btn">➕ เพิ่ม</button>
+          <button id="btnDeleteAdminRow" class="danger-btn small-btn">➖ ลบ</button>
+        </div>
+      </div>
+
+      <div class="section-divider">
+        <h4 style="margin: 0 0 10px;">รายชื่อผู้ดูแลระบบ</h4>
+        <div id="adminList" class="admin-list-box"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="ghost-btn" data-close="adminModal">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    const SHEET_NAMES = ["IMEI_Status", "Customer", "All_Record", "Employee", "Admin"];
+    const app = {
+      workbook: null,
+      selectedFileName: "workbook.xlsx",
+      admins: [],
+      adminSelectedIndex: null
+    };
+
+    const statusEl = document.getElementById("status");
+    const fileStatusEl = document.getElementById("fileStatus");
+    const exportModal = document.getElementById("exportModal");
+    const clearModal = document.getElementById("clearModal");
+    const adminModal = document.getElementById("adminModal");
+    const excelFileInput = document.getElementById("excelFile");
+
+    function displayCurrentUser() {
+      const user = sessionStorage.getItem("currentUser") || "Admin";
+      document.getElementById("currentUserDisplay").textContent = user;
+    }
+
+    function setStatus(message, type = "") {
+      statusEl.textContent = message;
+      statusEl.className = "status" + (type ? ` ${type}` : "");
+    }
+
+    function setFileStatus(message, type = "") {
+      fileStatusEl.innerHTML = message;
+      fileStatusEl.className = "file-status" + (type ? ` ${type}` : "");
+    }
+
+    function createDefaultWorkbook() {
+      const wb = XLSX.utils.book_new();
+      SHEET_NAMES.forEach(name => {
+        const ws = XLSX.utils.aoa_to_sheet([[""]]);
+        ws["!cols"] = [{ wch: 20 }];
+        XLSX.utils.book_append_sheet(wb, ws, name);
+      });
+      return wb;
+    }
+
+    function ensureWorkbookHasSheets() {
+      if (!app.workbook) {
+        app.workbook = createDefaultWorkbook();
+      }
+
+      SHEET_NAMES.forEach(sheetName => {
+        if (!app.workbook.Sheets[sheetName]) {
+          const ws = XLSX.utils.aoa_to_sheet([[]]);
+          XLSX.utils.book_append_sheet(app.workbook, ws, sheetName);
+        }
+      });
+    }
+
+    function populateSheetCheckboxes(targetId, selectedValues = []) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = "";
+
+      SHEET_NAMES.forEach(sheetName => {
+        const row = document.createElement("label");
+        row.className = "check-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = sheetName;
+        checkbox.checked = selectedValues.includes(sheetName);
+
+        const text = document.createElement("span");
+        text.textContent = sheetName;
+
+        row.appendChild(checkbox);
+        row.appendChild(text);
+        container.appendChild(row);
+      });
+    }
+
+    function openModal(modalEl) {
+      modalEl.classList.add("show");
+    }
+
+    function closeModal(modalEl) {
+      modalEl.classList.remove("show");
+    }
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const modal = document.getElementById(btn.dataset.close);
+        closeModal(modal);
+      });
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function loadAdminsFromStorage() {
+      try {
+        const stored = localStorage.getItem("admins");
+        if (stored) {
+          app.admins = JSON.parse(stored);
+        }
+      } catch (error) {
+        console.error("Error loading admins:", error);
+        app.admins = [];
+      }
+    }
+
+    function saveAdminsToStorage() {
+      try {
+        localStorage.setItem("admins", JSON.stringify(app.admins));
+      } catch (error) {
+        console.error("Error saving admins:", error);
+      }
+    }
+
+    function renderAdminList() {
+      const adminList = document.getElementById("adminList");
+      adminList.innerHTML = "";
+
+      if (app.admins.length === 0) {
+        adminList.innerHTML = "<div style='color:#62748b; padding:20px; text-align:center;'>ยังไม่มีข้อมูล</div>";
+        return;
+      }
+
+      app.admins.forEach((admin, index) => {
+        const row = document.createElement("div");
+        row.className = "admin-item";
+        row.dataset.index = String(index);
+
+        const info = document.createElement("div");
+        info.className = "admin-meta";
+
+        const roleClass = admin.role === "admin" ? "admin" : "user";
+        const roleText = admin.role === "admin" ? "Admin" : "User";
+
+        info.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="admin-name">${escapeHtml(admin.username)}</span>
+            <span class="admin-role ${roleClass}">${roleText}</span>
+          </div>
+          <span class="admin-password">••••••••</span>
+        `;
+
+        const selectBtn = document.createElement("button");
+        selectBtn.className = "ghost-btn small-btn";
+        selectBtn.textContent = "เลือก";
+        selectBtn.addEventListener("click", () => {
+          app.adminSelectedIndex = index;
+          adminList.querySelectorAll(".admin-item").forEach(item => item.classList.remove("selected"));
+          row.classList.add("selected");
+        });
+
+        row.appendChild(info);
+        row.appendChild(selectBtn);
+        adminList.appendChild(row);
+      });
+    }
+
+    function loadExcelFile(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        try {
+          app.workbook = XLSX.read(data, { type: "array" });
+          app.selectedFileName = file.name || "workbook.xlsx";
+          ensureWorkbookHasSheets();
+          setFileStatus(`✓ ${file.name}`, "");
+          setStatus(`โหลดไฟล์สำเร็จ: ${file.name}`, "success");
+        } catch (error) {
+          setFileStatus(`✗ ไฟล์ไม่ถูกต้อง`, "error");
+          setStatus("ไฟล์ Excel ไม่ถูกต้องหรือเสียหาย", "error");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    excelFileInput.addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      loadExcelFile(file);
+    });
+
+    document.getElementById("btnExport").addEventListener("click", function () {
+      if (!app.workbook) {
+        setStatus("กรุณาเลือกไฟล์ Excel ก่อน", "error");
+        return;
+      }
+      ensureWorkbookHasSheets();
+      populateSheetCheckboxes("exportSheetList", SHEET_NAMES);
+      openModal(exportModal);
+    });
+
+    document.getElementById("confirmExport").addEventListener("click", function () {
+      const checked = [...document.querySelectorAll("#exportSheetList input:checked")].map(el => el.value);
+
+      if (!checked.length) {
+        setStatus("กรุณาเลือกชีตอย่างน้อย 1 ชีต", "error");
+        return;
+      }
+
+      const exportWorkbook = XLSX.utils.book_new();
+      checked.forEach(sheetName => {
+        const sheet = app.workbook.Sheets[sheetName];
+        if (sheet) {
+          const newSheet = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: "" });
+          const exportSheet = XLSX.utils.aoa_to_sheet(newSheet);
+          
+          if (sheet['!cols']) {
+            exportSheet['!cols'] = sheet['!cols'];
+          }
+          if (sheet['!rows']) {
+            exportSheet['!rows'] = sheet['!rows'];
+          }
+          
+          XLSX.utils.book_append_sheet(exportWorkbook, exportSheet, sheetName);
+        }
+      });
+
+      const fileName = `export_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.xlsx`;
+      XLSX.writeFile(exportWorkbook, fileName);
+      setStatus(`Export สำเร็จ: ${fileName} (พร้อมข้อมูลทั้งหมดและหัวตาราง)`, "success");
+      closeModal(exportModal);
+    });
+
+    document.getElementById("btnClear").addEventListener("click", function () {
+      if (!app.workbook) {
+        setStatus("กรุณาเลือกไฟล์ Excel ก่อน", "error");
+        return;
+      }
+      ensureWorkbookHasSheets();
+      populateSheetCheckboxes("clearSheetList", SHEET_NAMES);
+      openModal(clearModal);
+    });
+
+    document.getElementById("confirmClear").addEventListener("click", function () {
+      const checked = [...document.querySelectorAll("#clearSheetList input:checked")].map(el => el.value);
+
+      if (!checked.length) {
+        setStatus("กรุณาเลือกชีตอย่างน้อย 1 ชีต", "error");
+        return;
+      }
+
+      const confirmed = confirm(`คุณต้องการเคลียร์ข้อมูลในชีต:\n${checked.join(", ")}\n\nการกระทำนี้ไม่สามารถย้อนกลับได้`);
+      if (!confirmed) return;
+
+      checked.forEach(sheetName => {
+        if (!app.workbook.Sheets[sheetName]) {
+          const ws = XLSX.utils.aoa_to_sheet([[]]);
+          app.workbook.Sheets[sheetName] = ws;
+          return;
+        }
+
+        const original = XLSX.utils.sheet_to_json(app.workbook.Sheets[sheetName], { header: 1, blankrows: false, defval: "" });
+        if (!original.length) {
+          app.workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet([[]]);
+          return;
+        }
+
+        const header = original[0] || [];
+        const cleaned = [header];
+        app.workbook.Sheets[sheetName] = XLSX.utils.aoa_to_sheet(cleaned);
+        app.workbook.Sheets[sheetName]["!cols"] = Array.from({ length: Math.max(header.length, 1) }, () => ({ wch: 20 }));
+      });
+
+      setStatus(`เคลียร์ข้อมูลสำเร็จในชีต: ${checked.join(", ")} (เก็บหัวตารางไว้)`, "success");
+      if (app.selectedFileName) {
+        try {
+          XLSX.writeFile(app.workbook, app.selectedFileName);
+        } catch (error) {
+          console.error("Auto-save error:", error);
+        }
+      }
+      closeModal(clearModal);
+    });
+
+    document.getElementById("btnAddAdmin").addEventListener("click", function () {
+      loadAdminsFromStorage();
+      document.getElementById("adminUsername").value = "";
+      document.getElementById("adminPassword").value = "";
+      document.getElementById("adminRole").value = "user";
+      app.adminSelectedIndex = null;
+      renderAdminList();
+      openModal(adminModal);
+    });
+
+    document.getElementById("btnAddAdminRow").addEventListener("click", function () {
+      const username = document.getElementById("adminUsername").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+      const role = document.getElementById("adminRole").value;
+
+      if (!username || !password) {
+        setStatus("กรุณากรอก Username และ Password", "error");
+        return;
+      }
+
+      const exists = app.admins.some(admin => admin.username === username);
+      if (exists) {
+        setStatus("Username นี้มีอยู่แล้ว", "error");
+        return;
+      }
+
+      app.admins.push({
+        username: username,
+        password: password,
+        role: role
+      });
+
+      saveAdminsToStorage();
+      renderAdminList();
+      setStatus(`เพิ่มผู้ดูแล ${username} (${role === "admin" ? "Admin" : "User"}) สำเร็จ`, "success");
+      document.getElementById("adminUsername").value = "";
+      document.getElementById("adminPassword").value = "";
+    });
+
+    document.getElementById("btnDeleteAdminRow").addEventListener("click", function () {
+      if (app.adminSelectedIndex === null || app.adminSelectedIndex >= app.admins.length) {
+        setStatus("กรุณาเลือกผู้ดูแลที่ต้องการลบ", "error");
+        return;
+      }
+
+      const admin = app.admins[app.adminSelectedIndex];
+      app.admins.splice(app.adminSelectedIndex, 1);
+      
+      saveAdminsToStorage();
+      app.adminSelectedIndex = null;
+      renderAdminList();
+      setStatus(`ลบผู้ดูแล ${admin.username} สำเร็จ`, "success");
+    });
+
+    function handleLogout() {
+      if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+        sessionStorage.removeItem("currentUser");
+        window.location.href = "MAIN.html";
+      }
+    }
+
+    window.handleLogout = handleLogout;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      displayCurrentUser();
+      loadAdminsFromStorage();
+      app.workbook = createDefaultWorkbook();
+      app.selectedFileName = "workbook.xlsx";
+      setStatus("พร้อมใช้งาน - โปรดเลือกไฟล์ Excel", "");
+    });
+  </script>
+</body>
+</html>
